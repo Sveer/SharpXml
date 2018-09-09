@@ -19,7 +19,7 @@ namespace SharpXml
 
 /// Record type containing the type specific information
 /// for the first element to serialize
-type internal TypeInfo = {
+type internal TypeInformation = {
     Type : System.Type
     OriginalName : string
     ClsName : string
@@ -572,7 +572,7 @@ module internal Serializer =
 
     let propertyCache = ref (Dictionary<Type, TypeWriterInfo>())
     let serializerCache = ref (Dictionary<Type, WriterFunc>())
-    let typeInfoCache = ref (Dictionary<Type, TypeInfo>())
+    let typeInfoCache = ref (Dictionary<Type, TypeInformation>())
 
     let writerFuncName = "ToXml"
     let instanceFlags = BindingFlags.Public ||| BindingFlags.Instance
@@ -592,7 +592,7 @@ module internal Serializer =
 
     let writeAbstractProperties _ _ _ = ()
 
-    /// Determine the name of the TypeInfo based on the given type
+    /// Determine the name of the TypeInformation based on the given type
     let getTypeName (t : Type) =
         let baseName = if t.IsArray then "Array" else removeGenericSuffix <| t.NullableUnderlying().Name
         if XmlConfig.Instance.EmitCamelCaseNames then
@@ -615,7 +615,7 @@ module internal Serializer =
                 else None
             else None)
 
-    /// Build a TypeInfo object based on the given Type
+    /// Build a TypeInformation object based on the given Type
     let buildTypeInfo t =
         match getAttribute<XmlElementAttribute> t with
         | Some attr ->
@@ -629,7 +629,7 @@ module internal Serializer =
               ClsName = getTypeName t
               Attributes = getNamespaceAttributes t }
 
-    /// Get the TypeInfo object associated with the given Type
+    /// Get the TypeInformation object associated with the given Type
     let getTypeInfo (t : Type) =
         match (!typeInfoCache).TryGetValue t with
         | true, ti -> ti
@@ -821,7 +821,7 @@ module internal Serializer =
         func name.Name name writer (writeClassInner info) value
 
     /// Class writer function with attribute support
-    and writeClassWithAttributes (typeInfo : TypeInfo) (info : TypeWriterInfo) (name : NameInfo) (writer : TextWriter) (value : obj) =
+    and writeClassWithAttributes (typeInfo : TypeInformation) (info : TypeWriterInfo) (name : NameInfo) (writer : TextWriter) (value : obj) =
         let statics = typeInfo.Attributes |> List.ofArray
         let attr =
             extractAttributeValues info value
